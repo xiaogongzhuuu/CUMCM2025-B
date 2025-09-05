@@ -1,0 +1,114 @@
+Si 外延层厚度拟合与条纹分析（附件4，15° 入射角）
+研究目的
+
+基于 附件4 的反射率实验数据，采用 Cauchy 模型拟合折射率，并利用 Airy 多光束干涉公式反推出外延层厚度。同时结合干涉条纹分析，提取条纹间隔，进一步验证结果。
+
+数学模型与物理基础
+1. 折射率模型 (Cauchy)
+
+外延层折射率 $n(\lambda)$ 表达为：
+
+n(\lambda) = A + \frac{B}{\lambda^2} + \frac{C}{\lambda^4}
+
+2. 多光束干涉反射率
+
+对于入射角 $\theta_i = 15^\circ$ 的情况，菲涅尔反射系数为：
+
+r_{01} = \frac{n_0 \cos\theta_i - n_1 \cos\theta_1}{n_0 \cos\theta_i + n_1 \cos\theta_1}, \quad
+r_{12} = \frac{n_1 \cos\theta_1 - n_2 \cos\theta_1}{n_1 \cos\theta_1 + n_2 \cos\theta_1}
+
+
+其中，$\theta_1$ 由 Snell 定律给出：
+
+\sin\theta_1 = \frac{n_0}{n_1}\sin\theta_i
+
+
+相位延迟为：
+
+\delta = \frac{2\pi}{\lambda} n_1 d \cos\theta_1
+
+
+Airy 公式反射率为：
+
+R = \frac{r_{01}^2 + r_{12}^2 + 2|r_{01}r_{12}|\cos(2\delta)}{1 + (r_{01}r_{12})^2 + 2|r_{01}r_{12}|\cos(2\delta)}
+
+3. 拟合目标函数
+
+通过最小化实验值 $R_{\text{exp}}$ 与理论值 $R_{\text{th}}$ 的均方误差，拟合 $(d, A, B, C)$：
+
+\min_{d, A, B, C} \; \frac{1}{N}\sum_{i=1}^N \big( R_{\text{th}}(\lambda_i; d, A, B, C) - R_{\text{exp}}(\lambda_i) \big)^2
+
+4. 干涉条纹间隔
+
+提取干涉峰波长 ${\lambda_m}$，定义相邻条纹间隔：
+
+\Delta\lambda_m = |\lambda_{m+1} - \lambda_m|
+
+
+平均条纹间隔为：
+
+\overline{\Delta\lambda} = \frac{1}{M-1}\sum_{m=1}^{M-1} \Delta\lambda_m
+
+程序实现步骤
+
+数据读取与预处理
+
+从 附件4.xlsx 读取反射率数据；
+
+转换波数为波长，归一化反射率。
+
+折射率与厚度拟合
+
+建立 Airy 干涉模型；
+
+优化 $(d, A, B, C)$；
+
+计算 R² 与 RMSE 评估拟合效果。
+
+条纹提取与分析
+
+用 find_peaks 提取干涉峰波长；
+
+计算条纹间隔与平均值；
+
+绘制条纹标记图。
+
+结果输出
+
+附件4拟合结果.png：拟合曲线对比图；
+
+附件4拟合报告.txt：厚度、Cauchy 参数与拟合指标；
+
+附件4拟合曲线数据.xlsx：实验与拟合曲线对照数据；
+
+附件4_干涉条纹标记.png：干涉条纹标记图；
+
+附件4_条纹间隔数据.xlsx：条纹间隔表格。
+
+结果示例
+
+拟合参数与厚度 (Cauchy 模型)：
+
+d = 2.146 \,\mu m, \quad
+A = 2.5837, \quad
+B = 0.01852 \,\mu m^2, \quad
+C = 4.21\times 10^{-4} \,\mu m^4
+
+
+拟合质量：
+
+R^2 = 0.3567, \quad RMSE = 0.1321
+
+
+条纹分析：
+
+\overline{\Delta\lambda} \approx 0.187 \,\mu m, \quad
+条纹数量 = 34
+
+结论
+
+附件4 在 15° 入射角下的实验数据，可以较好地拟合出外延层厚度和色散参数；
+
+干涉条纹间隔与拟合厚度结果一致性良好；
+
+与 10° 入射角数据（附件3）对比，厚度和拟合参数差异反映了角度对光学干涉的影响。

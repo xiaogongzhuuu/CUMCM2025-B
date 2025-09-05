@@ -1,0 +1,118 @@
+SiC 10° 入射角外延层厚度计算说明文档
+研究目的
+
+利用红外反射干涉数据，反演碳化硅 (SiC) 外延层的折射率，并通过干涉条纹间隔法估算外延层厚度。本文以 10° 入射角 的实验数据为例，展示完整的计算过程。
+
+数学模型与物理基础
+1. 菲涅尔反射率
+
+入射角为 $\theta_i$ 时，反射率由菲涅尔公式给出：
+
+R = \frac{1}{2}\left( 
+\left|\frac{\cos\theta_i - n \cos\theta_t}{\cos\theta_i + n \cos\theta_t}\right|^2 
++ 
+\left|\frac{n\cos\theta_i - \cos\theta_t}{n\cos\theta_i + \cos\theta_t}\right|^2 
+\right)
+
+
+其中，折射角 $\theta_t$ 由 Snell 定律确定：
+
+\sin\theta_t = \frac{\sin\theta_i}{n}.
+
+2. 折射率色散模型 (Cauchy)
+
+外延层折射率 $n(\lambda)$ 采用三项 Cauchy 模型拟合：
+
+n(\lambda) = A + \frac{B}{\lambda^2} + \frac{C}{\lambda^4}
+
+
+其中 $A, B, C$ 为拟合得到的色散系数。
+
+3. 干涉条件与厚度公式
+
+薄膜干涉条件为：
+
+2n d \cos\theta_t = m \lambda
+
+
+对于相邻干涉条纹，可得厚度公式：
+
+常见公式（近似法）
+d \approx \frac{\lambda_c^2}{2 n(\lambda_c) \cos\theta_t \, \Delta\lambda}
+
+
+其中：
+
+$\lambda_c$ 为中心条纹波长；
+
+$\Delta\lambda$ 为相邻条纹平均间隔；
+
+$n(\lambda_c)$ 为中心波长对应的折射率。
+
+程序实现步骤
+
+数据读取与预处理
+
+从 附件1.xlsx 读取反射率数据；
+
+将波数转换为波长（$\mu m$）；
+
+使用 Savitzky–Golay 滤波平滑反射率曲线。
+
+折射率反演与拟合
+
+根据实验反射率反推出折射率；
+
+对有效数据区间拟合 Cauchy 参数 $(A, B, C)$。
+
+条纹提取与厚度计算
+
+使用 find_peaks 提取干涉峰位置；
+
+计算条纹间隔 $\Delta \lambda$；
+
+选取中心波长 $\lambda_c$，计算对应的折射率 $n(\lambda_c)$；
+
+结合 Snell 定律计算 $\theta_t$；
+
+使用常见公式计算外延层厚度。
+
+结果输出
+程序自动生成以下文件：
+
+波长_折射率_附件1.xlsx：拟合折射率数据；
+
+条纹间隔_附件1.xlsx：干涉条纹波长与间隔；
+
+厚度计算结果_附件1.txt：厚度结果及条纹参数；
+
+SiC_10度拟合.png：拟合对比图；
+
+干涉条纹标记.png：条纹标记图。
+
+结果示例
+
+拟合参数 (Cauchy 模型)：
+
+A = 3.3278,\; B = -24.6992 \,\mu m^2,\; C = 139.1328 \,\mu m^4
+
+
+拟合质量：
+
+R^2 = 0.425,\; RMSE = 0.122
+
+
+厚度计算结果：
+
+d \approx 2.53 \,\mu m, \quad
+\Delta\lambda \approx 0.18 \,\mu m, \quad
+\lambda_c \approx 3.42 \,\mu m, \quad
+n(\lambda_c) \approx 2.25
+
+结论
+
+利用 Cauchy 模型拟合折射率 并结合 干涉条纹间隔法，可以有效地估算 SiC 外延层厚度；
+
+常见公式虽然是近似的，但在 $\Delta\lambda \ll \lambda$ 的情况下仍然可靠；
+
+拟合质量 $R^2$ 和 RMSE 反映了模型对实验数据的匹配程度，可用于评价计算结果的可信度。
