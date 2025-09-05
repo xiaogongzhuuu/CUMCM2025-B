@@ -7,17 +7,16 @@ import matplotlib, os
 matplotlib.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'DejaVu Sans']
 matplotlib.rcParams['axes.unicode_minus'] = False
 
-output_dir = '分析结果'
+output_dir = '问题3/分析结果/附件1(修正）'
 os.makedirs(output_dir, exist_ok=True)
 
-# ======================
 # 1. 读取附件3数据
-# ======================
+
 df = pd.read_excel("问题3/附件/附件1.xlsx", header=None)
-df = df.drop(0)  # 去掉表头
+df = df.drop(0)  
 df.columns = ["wavenumber_cm-1", "reflectance_percent"]
 
-# 转换波长 (μm) & 反射率
+# 转换波长 (μm) 反射率
 wavelength = 1e4 / df["wavenumber_cm-1"].astype(float).to_numpy()
 R_exp = (df["reflectance_percent"].astype(float) / 100).to_numpy()
 
@@ -31,7 +30,7 @@ def n1_cauchy(lam, A, B, C):
 # 3. Airy 反射率公式
 # ======================
 theta_i = np.radians(10)  # 入射角 10°
-n0, n2 = 1.0, 2.6        # 空气和衬底折射率 (SiC近似)
+n0, n2 = 1.0, 2.6        # 空气和衬底折射率 
 
 def airy_reflectance(lam, d, A, B, C):
     n1 = n1_cauchy(lam, A, B, C)
@@ -73,7 +72,7 @@ plt.plot(wavelength, R_exp, 'b.', label="实验数据")
 plt.plot(wavelength, R_fit, 'r-', label=f"拟合曲线 (d={d_fit:.3f} μm)")
 plt.xlabel("波长 (μm)")
 plt.ylabel("反射率")
-plt.title("附件3公式拟合 (10° 入射角)")
+plt.title("附件1公式拟合 (10° 入射角)")
 plt.legend()
 plt.grid(True, alpha=0.3)
 plt.savefig(os.path.join(output_dir, "附件1拟合结果.png"), dpi=300, bbox_inches="tight")
@@ -117,4 +116,3 @@ df_result = pd.DataFrame({
 df_result.to_excel(os.path.join(output_dir, "附件1拟合曲线数据.xlsx"), index=False)
 
 print(f"R² = {r2:.4f}, RMSE = {rmse:.6f}")
-print("✅ 拟合完成，结果已保存到 '分析结果' 文件夹")

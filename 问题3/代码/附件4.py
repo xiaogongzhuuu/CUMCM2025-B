@@ -7,14 +7,14 @@ import matplotlib ,os
 matplotlib.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'DejaVu Sans']
 matplotlib.rcParams['axes.unicode_minus'] = False
 
-output_dir = '分析结果'
+output_dir = '问题3/分析结果/附件4'
 os.makedirs(output_dir, exist_ok=True)
 
-# ======================
+
 # 1. 读取附件4数据
-# ======================
+
 df = pd.read_excel("问题3/附件/附件4.xlsx", header=None)
-df = df.drop(0)  # 去掉表头
+df = df.drop(0)  
 df.columns = ["wavenumber_cm-1", "reflectance_percent"]
 
 # 转换波长 (μm) & 反射率
@@ -117,4 +117,4 @@ df_result = pd.DataFrame({
 df_result.to_excel(os.path.join(output_dir, "附件4拟合曲线数据.xlsx"), index=False)
 
 print(f"R² = {r2:.4f}, RMSE = {rmse:.6f}")
-print("✅ 拟合完成，结果已保存到 '分析结果' 文件夹")
+
