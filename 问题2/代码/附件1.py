@@ -174,8 +174,8 @@ n_center = complete_n_3term(lambda_center)
 # Snell 定律求薄膜内折射角
 theta_t = np.arcsin(np.sin(theta_i) / n_center)
 
-#d = Δλ / (2 * n * cos(θ))
-d = delta_lambda_mean / (2 * n_center * np.cos(theta_t))
+# 常见厚度计算公式: d = λ^2 / (2 n cosθ Δλ)
+d = (lambda_center ** 2) / (2 * n_center * np.cos(theta_t) * delta_lambda_mean)
 
 print(f"外延层厚度 d ≈ {d:.4f} μm")
 
