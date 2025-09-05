@@ -10,7 +10,7 @@ matplotlib.rcParams['axes.unicode_minus'] = False
 output_dir = '问题3/分析结果/附件2(修正）'
 os.makedirs(output_dir, exist_ok=True)
 
-# 1. 读取附件3数据
+# 1. 读取附件2数据
 
 df = pd.read_excel("问题3/附件/附件2.xlsx", header=None)
 df = df.drop(0)  
