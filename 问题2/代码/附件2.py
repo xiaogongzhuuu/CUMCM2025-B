@@ -13,13 +13,13 @@ m_star = 0.25 * 9.109e-31
 c = 2.998e8
 
 # 实验参数
-incident_angle = 15.0  # 度
+incident_angle = 15.0  
 theta_i = np.radians(incident_angle)
 
 
 matplotlib.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'DejaVu Sans']
 matplotlib.rcParams['axes.unicode_minus'] = False
-output_dir = '分析结果'
+output_dir = '问题2/分析结果/附件2'
 os.makedirs(output_dir, exist_ok=True)
 
 def fresnel_reflectance(n, theta_i):
@@ -51,12 +51,11 @@ def solve_n_from_reflectance(R_val):
         return (1 + sqrt_R) / (1 - sqrt_R)
 
 # 读取数据
-print("读取附件2数据（15度入射角）...")
 data = pd.read_excel('问题2/附件/附件2.xlsx', header=None)
 data = data.dropna().apply(pd.to_numeric, errors='coerce').dropna()
 
 # 数据处理
-wavelength = 10000 / data.iloc[:, 0]  # μm
+wavelength = 10000 / data.iloc[:, 0]  
 reflectance = data.iloc[:, 1] / 100
 
 # 滤波
@@ -69,7 +68,6 @@ else:
     reflectance_filtered = reflectance
 
 # 计算折射率
-print("计算折射率...")
 n_measured = np.array([solve_n_from_reflectance(R) for R in reflectance_filtered])
 
 # 三项Cauchy拟合
@@ -79,7 +77,7 @@ A, B, C = np.linalg.lstsq(X, n_measured[valid], rcond=None)[0]
 
 print(f"拟合参数: A = {A:.4f}, B = {B:.6f}, C = {C:.8f}")
 
-# 完整折射率函数（Cauchy+Drude 替代版）
+# 折射率函数
 def complete_n_3term(lam):
     """
     折射率模型: n^2 = (A + B/lam^2 + C/lam^4)^2 - (N e^2)/(epsilon0 m* omega^2)
@@ -89,7 +87,6 @@ def complete_n_3term(lam):
     omega = 2 * np.pi * c / lam_m
     n2_cauchy = (A + B/lam**2 + C/lam**4)**2
 
-    # ====== 新增部分：N 的确定 ======
     # 在有效波段内拟合一个最佳 N，使反射率曲线尽量逼近实验值
     w_valid = wavelength[valid]
     R_valid = reflectance_filtered[valid]
@@ -103,7 +100,7 @@ def complete_n_3term(lam):
     resN = minimize_scalar(objective_N, bounds=(1e20, 1e26), method="bounded")
     N_opt = resN.x if resN.success else 1e22
 
-    # ====== 使用拟合到的 N ======
+    # 使用拟合到的 N 
     drude = (N_opt * e**2) / (epsilon_0 * m_star * omega**2)
     n2 = np.maximum(n2_cauchy - drude, 1.0)
     return np.sqrt(n2)
@@ -121,7 +118,7 @@ result = pd.DataFrame({
     '波长_微米': wavelength,
     '折射率': complete_n_3term(wavelength)
 })
-result.to_excel(os.path.join(output_dir, '波长_折射率_15度.xlsx'), index=False)
+result.to_excel(os.path.join(output_dir, '波长_折射率_附件2.xlsx'), index=False)
 
 # 核心验证图
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
@@ -170,17 +167,17 @@ RMSE = {rmse:.8f}
 折射率范围: {n_measured[valid].min():.3f}-{n_measured[valid].max():.3f}
 """
 
-with open(os.path.join(output_dir, '分析报告_15度.txt'), 'w', encoding='utf-8') as f:
+with open(os.path.join(output_dir, '分析报告_附件2.txt'), 'w', encoding='utf-8') as f:
     f.write(report)
 
-print(f"15度分析完成! 文件保存在: {output_dir}/")
+
 print(f"R² = {r2:.4f}, RMSE = {rmse:.6f}")
 
 from scipy.signal import find_peaks
 
-# ==============================
+
 # 1. 提取条纹极值点
-# ==============================
+
 peaks, _ = find_peaks(reflectance_filtered, distance=30)  # 可调 distance 参数
 lambda_peaks = wavelength[peaks]
 
@@ -191,30 +188,30 @@ delta_lambda_mean = np.mean(delta_lambda)
 print(f"相邻条纹间隔 Δλ (前10个): {delta_lambda[:10]}")
 print(f"平均条纹间隔 Δλ: {delta_lambda_mean:.4f} μm")
 
-# ==============================
-# 2. 厚度计算 (严格公式)
-# ==============================
+
+# 2. 厚度计算 
+
 lambda_center = np.median(lambda_peaks)   # 选择中间条纹作为代表
 n_center = complete_n_3term(lambda_center)  # 对应折射率
 
 # Snell 定律求折射角
 theta_t = np.arcsin(np.sin(theta_i) / n_center)
 
-# 厚度计算公式（严格版）
+# 厚度计算公式
 d = lambda_center * (lambda_center + delta_lambda_mean) / (2 * n_center * np.cos(theta_t) * delta_lambda_mean)
 
 print(f"外延层厚度 d ≈ {d:.4f} μm")
 
-# ==============================
+
 # 3. 保存条纹与厚度结果
-# ==============================
+
 df_stripes = pd.DataFrame({
     "条纹波长_μm": lambda_peaks,
     "条纹间隔Δλ_μm": np.append(delta_lambda, np.nan)
 })
-df_stripes.to_excel(os.path.join(output_dir, "条纹间隔_15度.xlsx"), index=False)
+df_stripes.to_excel(os.path.join(output_dir, "条纹间隔_附件2.xlsx"), index=False)
 
-with open(os.path.join(output_dir, "厚度计算结果_15度.txt"), "w", encoding="utf-8") as f:
+with open(os.path.join(output_dir, "厚度计算结果_附件2.txt"), "w", encoding="utf-8") as f:
     f.write(f"外延层厚度 d ≈ {d:.4f} μm\n")
     f.write(f"平均条纹间隔 Δλ ≈ {delta_lambda_mean:.4f} μm\n")
     f.write(f"中心波长 λ ≈ {lambda_center:.4f} μm\n")
