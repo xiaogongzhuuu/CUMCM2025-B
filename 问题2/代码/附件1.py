@@ -220,5 +220,23 @@ with open(os.path.join(output_dir, "厚度计算结果_附件1.txt"), "w", encod
     f.write(f"中心波长 λ ≈ {lambda_center:.4f} μm\n")
     f.write(f"中心折射率 n ≈ {n_center:.4f}\n")
 
+ #干涉条纹标记图
+plt.figure(figsize=(8, 5))
+plt.plot(wavelength, reflectance_filtered * 100, label="滤波后反射率", color="blue", linewidth=1.5)
+plt.scatter(lambda_peaks, reflectance_filtered[peaks] * 100,
+            color="red", marker="o", s=40, label="干涉峰")
+for i, lam in enumerate(lambda_peaks[:10]):  # 只标前10个，避免太乱
+    plt.text(lam, reflectance_filtered[peaks[i]] * 100 + 1,
+             f"{lam:.2f}", fontsize=8, rotation=45)
+
+plt.xlabel("波长 (μm)")
+plt.ylabel("反射率 (%)")
+plt.title(f"干涉条纹标记 (Δλ≈{delta_lambda_mean:.4f} μm)")
+plt.legend()
+plt.grid(alpha=0.3)
+plt.tight_layout()
+plt.savefig(os.path.join(output_dir, "干涉条纹标记.png"), dpi=300, bbox_inches="tight")
+plt.show()
+
 
 

@@ -118,3 +118,40 @@ df_result.to_excel(os.path.join(output_dir, "附件3拟合曲线数据.xlsx"), i
 
 print(f"R² = {r2:.4f}, RMSE = {rmse:.6f}")
 
+from scipy.signal import find_peaks
+
+# 使用实验数据提取干涉峰
+peaks, _ = find_peaks(R_exp, distance=30)  # distance 控制避免过密
+lambda_peaks = wavelength[peaks]
+
+# 计算相邻条纹间隔 Δλ
+delta_lambda = np.abs(np.diff(lambda_peaks))
+delta_lambda_mean = np.mean(delta_lambda) if len(delta_lambda) > 0 else np.nan
+
+plt.figure(figsize=(8, 5))
+plt.plot(wavelength, R_exp * 100, label="实验反射率", color="blue", linewidth=1.2)
+plt.scatter(lambda_peaks, R_exp[peaks] * 100,
+            color="red", marker="o", s=40, label="干涉峰")
+for i, lam in enumerate(lambda_peaks[:10]):  # 只标前10个，避免太乱
+    plt.text(lam, R_exp[peaks[i]] * 100 + 1,
+             f"{lam:.2f}", fontsize=8, rotation=45)
+
+plt.xlabel("波长 (μm)")
+plt.ylabel("反射率 (%)")
+plt.title(f"附件3干涉条纹标记 (Δλ≈{delta_lambda_mean:.4f} μm)")
+plt.legend()
+plt.grid(alpha=0.3)
+plt.tight_layout()
+plt.savefig(os.path.join(output_dir, "附件3_干涉条纹标记.png"), dpi=300, bbox_inches="tight")
+plt.show()
+
+# 保存条纹结果
+df_stripes = pd.DataFrame({
+    "条纹波长_μm": lambda_peaks,
+    "条纹间隔Δλ_μm": np.append(delta_lambda, np.nan)
+})
+df_stripes.to_excel(os.path.join(output_dir, "附件3_条纹间隔数据.xlsx"), index=False)
+
+with open(os.path.join(output_dir, "附件3_条纹结果.txt"), "w", encoding="utf-8") as f:
+    f.write(f"平均条纹间隔 Δλ ≈ {delta_lambda_mean:.4f} μm\n")
+    f.write(f"条纹数量 = {len(lambda_peaks)}\n")
