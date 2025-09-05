@@ -150,7 +150,6 @@ print(f"R² = {r2:.4f}, RMSE = {rmse:.6f}")
 
 from scipy.signal import find_peaks
 
-# 厚度计算部分 - 修正核心公式
 # 1. 提取条纹极值点
 
 peaks, _ = find_peaks(reflectance_filtered, distance=30)  # 可调 distance 参数
