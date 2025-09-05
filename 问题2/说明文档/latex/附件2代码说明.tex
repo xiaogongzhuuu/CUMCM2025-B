@@ -1,0 +1,79 @@
+\section{SiC 15° 入射角外延层厚度计算}
+
+\subsection{研究目的}
+在碳化硅 (SiC) 外延层厚度测量中，红外干涉法是一种常用的非破坏性手段。由于外延层与衬底之间存在折射率差异，在一定入射角下会产生干涉条纹。通过提取条纹间隔并结合色散模型，可以反推出外延层厚度。本文以 \SI{15}{\degree} 入射角实验数据为例，基于 \textbf{Cauchy+Drude 模型} 拟合折射率并进行厚度计算。
+
+\subsection{数学模型与物理基础}
+
+\subsubsection{菲涅尔反射率}
+在入射角 $\theta_i$ 下，反射率由菲涅尔公式计算：
+\begin{equation}
+R = \frac{1}{2}\left( 
+\left|\frac{\cos\theta_i - n \cos\theta_t}{\cos\theta_i + n \cos\theta_t}\right|^2 
++ 
+\left|\frac{n\cos\theta_i - \cos\theta_t}{n\cos\theta_i + \cos\theta_t}\right|^2 
+\right),
+\end{equation}
+其中，折射角 $\theta_t$ 由 Snell 定律：
+\begin{equation}
+\sin\theta_t = \frac{\sin\theta_i}{n}.
+\end{equation}
+
+\subsubsection{折射率模型：Cauchy+Drude}
+外延层折射率 $n(\lambda)$ 的平方形式为：
+\begin{equation}
+n^2(\lambda) = \left(A + \frac{B}{\lambda^2} + \frac{C}{\lambda^4}\right)^2 - \frac{Ne^2}{\varepsilon_0 m^\ast \omega^2},
+\end{equation}
+其中：
+\begin{itemize}
+    \item $(A, B, C)$ 为 Cauchy 色散系数；
+    \item $N$ 为自由载流子浓度；
+    \item Drude 模型部分描述了自由电子对红外折射率的修正。
+\end{itemize}
+
+\subsubsection{厚度公式}
+由干涉条件可得外延层厚度：
+\begin{equation}
+d = \frac{\lambda \, (\lambda + \Delta \lambda)}{2 \, n(\lambda) \cos\theta_t \, \Delta \lambda},
+\end{equation}
+其中 $\lambda$ 为中心条纹波长，$\Delta \lambda$ 为平均条纹间隔。
+
+\subsection{程序实现步骤}
+
+\begin{enumerate}
+    \item \textbf{数据读取与预处理}  
+    从 \texttt{附件2.xlsx} 读取实验反射率数据；转换波数为波长（\si{\micro\meter}）；使用 Savitzky–Golay 滤波器平滑曲线，抑制高频噪声。
+
+    \item \textbf{折射率反演与拟合}  
+    根据菲涅尔公式，从实验反射率反演折射率；对有效数据区间，拟合 Cauchy 模型参数 $(A, B, C)$；在此基础上，通过最小化实验反射率与模型反射率之间的误差，反演最佳载流子浓度 $N$，得到完整的 Cauchy+Drude 模型。
+
+    \item \textbf{条纹提取与厚度计算}  
+    使用 \texttt{find\_peaks} 提取干涉峰位置；计算相邻条纹间隔 $\Delta \lambda$；选择中间条纹波长作为代表值，计算折射率 $n(\lambda)$ 与折射角 $\theta_t$；利用严格公式计算厚度 $d$。
+
+    \item \textbf{结果输出}  
+    程序自动生成：
+    \begin{itemize}
+        \item \texttt{波长\_折射率\_15度.xlsx}：拟合折射率数据；
+        \item \texttt{条纹间隔\_15度.xlsx}：干涉条纹波长与间隔；
+        \item \texttt{厚度计算结果\_15度.txt}：外延层厚度及条纹参数；
+        \item \texttt{SiC\_15度拟合.png}：拟合结果可视化。
+    \end{itemize}
+\end{enumerate}
+
+\subsection{结果示例}
+\begin{itemize}
+    \item \textbf{拟合参数 (Cauchy 模型)}：  
+    $A = 3.3278,\; B = -24.6992 \,\si{\micro m^2},\; C = 139.1328 \,\si{\micro m^4}$。
+    \item \textbf{拟合质量}：  
+    $R^2 = -0.3135,\; RMSE = 0.8813$。
+    \item \textbf{厚度计算}：  
+    \[
+    d \approx 14.7 \,\si{\micro m}, \quad
+    \Delta \lambda \approx 0.19 \,\si{\micro m}, \quad
+    \lambda \approx 3.48 \,\si{\micro m}, \quad
+    n \approx 2.18
+    \]
+\end{itemize}
+
+\subsection{结论}
+相较于单一的 Cauchy 模型，Cauchy+Drude 模型能更好地描述掺杂 SiC 外延层在红外波段的折射率变化。实验结果验证了该方法在 \SI{15}{\degree} 入射角条件下的适用性，厚度计算结果具有较高可靠性。
