@@ -51,8 +51,8 @@ def solve_n_from_reflectance(R_val):
         return (1 + sqrt_R) / (1 - sqrt_R)
 
 # 读取数据
-print("📖 读取附件2数据（15度入射角）...")
-data = pd.read_excel('附件/附件2.xlsx', header=None)
+print("读取附件2数据（15度入射角）...")
+data = pd.read_excel('问题2/附件/附件2.xlsx', header=None)
 data = data.dropna().apply(pd.to_numeric, errors='coerce').dropna()
 
 # 数据处理
@@ -64,12 +64,12 @@ if len(reflectance) > 5:
     window_length = min(11, len(reflectance) if len(reflectance) % 2 == 1 else len(reflectance) - 1)
     window_length = max(window_length, 5)
     reflectance_filtered = savgol_filter(reflectance, window_length, 3)
-    print(f"✅ 滤波完成 (窗口: {window_length})")
+    print(f"滤波完成 (窗口: {window_length})")
 else:
     reflectance_filtered = reflectance
 
 # 计算折射率
-print("🔄 计算折射率...")
+print("计算折射率...")
 n_measured = np.array([solve_n_from_reflectance(R) for R in reflectance_filtered])
 
 # 三项Cauchy拟合
@@ -173,8 +173,8 @@ RMSE = {rmse:.8f}
 with open(os.path.join(output_dir, '分析报告_15度.txt'), 'w', encoding='utf-8') as f:
     f.write(report)
 
-print(f"✅ 15度分析完成! 文件保存在: {output_dir}/")
-print(f"📊 R² = {r2:.4f}, RMSE = {rmse:.6f}")
+print(f"15度分析完成! 文件保存在: {output_dir}/")
+print(f"R² = {r2:.4f}, RMSE = {rmse:.6f}")
 
 from scipy.signal import find_peaks
 
@@ -203,7 +203,7 @@ theta_t = np.arcsin(np.sin(theta_i) / n_center)
 # 厚度计算公式（严格版）
 d = lambda_center * (lambda_center + delta_lambda_mean) / (2 * n_center * np.cos(theta_t) * delta_lambda_mean)
 
-print(f"✅ 外延层厚度 d ≈ {d:.4f} μm")
+print(f"外延层厚度 d ≈ {d:.4f} μm")
 
 # ==============================
 # 3. 保存条纹与厚度结果
