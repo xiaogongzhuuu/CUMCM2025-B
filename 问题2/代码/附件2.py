@@ -77,7 +77,7 @@ A, B, C = np.linalg.lstsq(X, n_measured[valid], rcond=None)[0]
 
 print(f"拟合参数: A = {A:.4f}, B = {B:.6f}, C = {C:.8f}")
 
-# 折射率函数 - 简化版本，去掉复杂的Drude修正
+# 折射率函数 
 def complete_n_3term(lam):
     """简化的Cauchy色散模型"""
     return A + B/lam**2 + C/lam**4

@@ -31,7 +31,7 @@ def n1_cauchy(lam, A, B, C):
 # 3.反射率公式
 
 theta_i = np.radians(10)  # 入射角 10°
-n0, n2 = 1.0, 2.6        # 空气和衬底折射率 
+n0, n2 = 1.0, 3.4        # 空气和衬底折射率 
 
 def airy_reflectance(lam, d, A, B, C):
     n1 = n1_cauchy(lam, A, B, C)
