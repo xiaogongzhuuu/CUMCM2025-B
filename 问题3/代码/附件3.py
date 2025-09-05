@@ -7,7 +7,7 @@ import matplotlib, os
 matplotlib.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'DejaVu Sans']
 matplotlib.rcParams['axes.unicode_minus'] = False
 
-output_dir = 'SiC分析结果'
+output_dir = '分析结果'
 os.makedirs(output_dir, exist_ok=True)
 
 # ======================
@@ -82,9 +82,15 @@ plt.show()
 # ======================
 # 7. 保存分析结果
 # ======================
+
+# 计算拟合质量
+mse = np.mean((R_fit - R_exp)**2)
+rmse = np.sqrt(mse)
+r2 = 1 - np.sum((R_exp - R_fit)**2) / np.sum((R_exp - np.mean(R_exp))**2)
+
 # 保存参数和结果
 report = f"""
-SiC 外延层厚度拟合报告 (10° 入射角)
+外延层厚度拟合报告 (10° 入射角)
 ================================
 拟合得到厚度 d = {d_fit:.4f} μm
 
@@ -92,6 +98,10 @@ Cauchy 模型参数:
 A = {A_fit:.6f}
 B = {B_fit:.6f}
 C = {C_fit:.6e}
+
+拟合质量:
+R²   = {r2:.6f}
+RMSE = {rmse:.6e}
 
 优化方法: Nelder-Mead
 """
@@ -106,4 +116,5 @@ df_result = pd.DataFrame({
 })
 df_result.to_excel(os.path.join(output_dir, "附件3拟合曲线数据.xlsx"), index=False)
 
-print("拟合分析完成，结果已保存到 SiC分析结果 文件夹。")
+print(f"R² = {r2:.4f}, RMSE = {rmse:.6f}")
+print("✅ 拟合完成，结果已保存到 '分析结果' 文件夹")

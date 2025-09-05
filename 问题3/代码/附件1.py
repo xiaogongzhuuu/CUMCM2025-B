@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from scipy.optimize import minimize
 import matplotlib.pyplot as plt
-import matplotlib ,os
+import matplotlib, os
 
 matplotlib.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'DejaVu Sans']
 matplotlib.rcParams['axes.unicode_minus'] = False
@@ -11,9 +11,9 @@ output_dir = '分析结果'
 os.makedirs(output_dir, exist_ok=True)
 
 # ======================
-# 1. 读取附件4数据
+# 1. 读取附件3数据
 # ======================
-df = pd.read_excel("问题3/附件/附件4.xlsx", header=None)
+df = pd.read_excel("问题3/附件/附件1.xlsx", header=None)
 df = df.drop(0)  # 去掉表头
 df.columns = ["wavenumber_cm-1", "reflectance_percent"]
 
@@ -30,7 +30,7 @@ def n1_cauchy(lam, A, B, C):
 # ======================
 # 3. Airy 反射率公式
 # ======================
-theta_i = np.radians(15)  # 入射角 15°
+theta_i = np.radians(10)  # 入射角 10°
 n0, n2 = 1.0, 2.6        # 空气和衬底折射率 (SiC近似)
 
 def airy_reflectance(lam, d, A, B, C):
@@ -56,8 +56,7 @@ def objective(params, lam, R_exp):
 # ======================
 # 5. 优化求解
 # ======================
-# 初始猜测: 厚度3 μm, A=2.6, B=0.01, C=0
-init_params = [3.0, 2.6, 0.01, 0.0]
+init_params = [3.0, 2.6, 0.01, 0.0]  # 初值: 厚度3 μm, A=2.6, B=0.01, C=0
 res = minimize(objective, init_params, args=(wavelength, R_exp), method="Nelder-Mead")
 d_fit, A_fit, B_fit, C_fit = res.x
 
@@ -74,11 +73,12 @@ plt.plot(wavelength, R_exp, 'b.', label="实验数据")
 plt.plot(wavelength, R_fit, 'r-', label=f"拟合曲线 (d={d_fit:.3f} μm)")
 plt.xlabel("波长 (μm)")
 plt.ylabel("反射率")
-plt.title("附件4公式拟合 (15° 入射角)")
+plt.title("附件3公式拟合 (10° 入射角)")
 plt.legend()
 plt.grid(True, alpha=0.3)
-plt.savefig(os.path.join(output_dir, "附件4拟合结果.png"), dpi=300, bbox_inches="tight")
+plt.savefig(os.path.join(output_dir, "附件1拟合结果.png"), dpi=300, bbox_inches="tight")
 plt.show()
+
 # ======================
 # 7. 保存分析结果
 # ======================
@@ -90,7 +90,7 @@ r2 = 1 - np.sum((R_exp - R_fit)**2) / np.sum((R_exp - np.mean(R_exp))**2)
 
 # 保存参数和结果
 report = f"""
-外延层厚度拟合报告 (15° 入射角)
+SiC 外延层厚度拟合报告 (10° 入射角)
 ================================
 拟合得到厚度 d = {d_fit:.4f} μm
 
@@ -105,7 +105,7 @@ RMSE = {rmse:.6e}
 
 优化方法: Nelder-Mead
 """
-with open(os.path.join(output_dir, "附件4拟合报告.txt"), "w", encoding="utf-8") as f:
+with open(os.path.join(output_dir, "附件1拟合报告.txt"), "w", encoding="utf-8") as f:
     f.write(report)
 
 # 保存对比数据表格
@@ -114,7 +114,7 @@ df_result = pd.DataFrame({
     "实验反射率": R_exp,
     "拟合反射率": R_fit
 })
-df_result.to_excel(os.path.join(output_dir, "附件4拟合曲线数据.xlsx"), index=False)
+df_result.to_excel(os.path.join(output_dir, "附件1拟合曲线数据.xlsx"), index=False)
 
 print(f"R² = {r2:.4f}, RMSE = {rmse:.6f}")
 print("✅ 拟合完成，结果已保存到 '分析结果' 文件夹")

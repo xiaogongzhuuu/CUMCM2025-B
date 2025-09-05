@@ -19,7 +19,7 @@ theta_i = np.radians(incident_angle)
 
 matplotlib.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'DejaVu Sans']
 matplotlib.rcParams['axes.unicode_minus'] = False
-output_dir = 'SiC分析结果'
+output_dir = '分析结果'
 os.makedirs(output_dir, exist_ok=True)
 
 def fresnel_reflectance(n, theta_i):
