@@ -20,15 +20,15 @@ df.columns = ["wavenumber_cm-1", "reflectance_percent"]
 wavelength = 1e4 / df["wavenumber_cm-1"].astype(float).to_numpy()
 R_exp = (df["reflectance_percent"].astype(float) / 100).to_numpy()
 
-# ======================
+
 # 2. 折射率模型 (Cauchy)
-# ======================
+
 def n1_cauchy(lam, A, B, C):
     return A + B/lam**2 + C/lam**4
 
-# ======================
-# 3. Airy 反射率公式
-# ======================
+
+# 3.反射率公式
+
 theta_i = np.radians(15)  # 入射角 15°
 n0, n2 = 1.0, 2.6        # 空气和衬底折射率 
 
@@ -44,17 +44,17 @@ def airy_reflectance(lam, d, A, B, C):
         (1 + (r01*r12)**2 + 2*np.abs(r01*r12)*np.cos(2*delta))
     return R
 
-# ======================
+
 # 4. 拟合目标函数
-# ======================
+
 def objective(params, lam, R_exp):
     d, A, B, C = params
     R_th = airy_reflectance(lam, d, A, B, C)
     return np.mean((R_th - R_exp)**2)
 
-# ======================
+
 # 5. 优化求解
-# ======================
+
 init_params = [3.0, 2.6, 0.01, 0.0]  # 初值: 厚度3 μm, A=2.6, B=0.01, C=0
 res = minimize(objective, init_params, args=(wavelength, R_exp), method="Nelder-Mead")
 d_fit, A_fit, B_fit, C_fit = res.x
@@ -62,9 +62,9 @@ d_fit, A_fit, B_fit, C_fit = res.x
 print(f"拟合得到的厚度 d = {d_fit:.4f} μm")
 print(f"Cauchy参数: A={A_fit:.4f}, B={B_fit:.6f}, C={C_fit:.6e}")
 
-# ======================
+
 # 6. 可视化对比
-# ======================
+
 R_fit = airy_reflectance(wavelength, d_fit, A_fit, B_fit, C_fit)
 
 plt.figure(figsize=(8,5))
@@ -78,9 +78,9 @@ plt.grid(True, alpha=0.3)
 plt.savefig(os.path.join(output_dir, "附件2拟合结果.png"), dpi=300, bbox_inches="tight")
 plt.show()
 
-# ======================
+
 # 7. 保存分析结果
-# ======================
+
 
 # 计算拟合质量
 mse = np.mean((R_fit - R_exp)**2)
