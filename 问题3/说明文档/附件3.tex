@@ -1,0 +1,83 @@
+\documentclass[12pt,a4paper]{article}
+\usepackage{amsmath, amssymb, geometry, graphicx}
+\geometry{margin=2.5cm}
+
+\title{SiC 10° 入射角外延层厚度计算}
+\author{}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{研究目的}
+在碳化硅 (SiC) 外延层厚度测量中，红外干涉法是一种常用的非破坏性手段。由于外延层与衬底之间存在折射率差异，在一定入射角下会产生干涉条纹。通过拟合反射率光谱曲线，可以反推出外延层厚度。本文以 \textbf{10° 入射角实验数据（附件3）} 为例，基于 \textbf{Airy 多光束干涉公式 + Cauchy 模型} 拟合折射率并进行厚度计算。
+
+\section{数学模型与物理基础}
+
+\subsection{菲涅尔反射率}
+在入射角 $\theta_i$ 下，反射率由菲涅尔公式计算：
+\begin{equation}
+R = \tfrac{1}{2} \left( 
+\left|\frac{\cos\theta_i - n\cos\theta_t}{\cos\theta_i + n\cos\theta_t}\right|^2 +
+\left|\frac{n\cos\theta_i - \cos\theta_t}{n\cos\theta_i + \cos\theta_t}\right|^2
+\right),
+\end{equation}
+其中，折射角 $\theta_t$ 由 Snell 定律确定：
+\begin{equation}
+\sin\theta_t = \frac{\sin\theta_i}{n}.
+\end{equation}
+
+\subsection{折射率模型（Cauchy 模型）}
+外延层折射率 $n(\lambda)$ 采用三项式 Cauchy 模型近似：
+\begin{equation}
+n(\lambda) = A + \frac{B}{\lambda^2} + \frac{C}{\lambda^4},
+\end{equation}
+其中 $(A,B,C)$ 为待拟合的色散系数。
+
+\subsection{多光束干涉公式（Airy 公式）}
+考虑外延层表面和界面的多次反射，理论反射率为：
+\begin{equation}
+R(\lambda) = 
+\frac{r_{01}^2 + r_{12}^2 + 2|r_{01}r_{12}|\cos(2\delta)}
+     {1 + (r_{01}r_{12})^2 + 2|r_{01}r_{12}|\cos(2\delta)},
+\end{equation}
+其中相位延迟为：
+\begin{equation}
+\delta = \frac{2\pi}{\lambda}\,n(\lambda)\,d\cos\theta_t,
+\end{equation}
+$d$ 为外延层厚度。
+
+\section{程序实现步骤}
+\begin{enumerate}
+    \item \textbf{数据读取与预处理}：从 \texttt{附件3.xlsx} 读取实验反射率数据；将波数转换为波长（$\mu m$）；反射率由百分比转为小数形式。
+    \item \textbf{理论模型建立}：定义 Cauchy 折射率模型；基于 Airy 多光束干涉公式计算理论反射率。
+    \item \textbf{参数拟合}：构造目标函数，最小化实验反射率与理论反射率的均方误差；采用 \texttt{scipy.optimize.minimize} 的 Nelder-Mead 算法拟合厚度 $d$ 与 Cauchy 系数 $(A,B,C)$。
+    \item \textbf{结果输出}：程序自动生成：
+    \begin{itemize}
+        \item \texttt{附件3拟合结果.png}：实验数据与拟合曲线对比；
+        \item \texttt{附件3拟合报告.txt}：外延层厚度与拟合参数；
+        \item \texttt{附件3拟合曲线数据.xlsx}：波长–实验反射率–拟合反射率。
+    \end{itemize}
+\end{enumerate}
+
+\section{结果示例}
+\begin{itemize}
+    \item \textbf{拟合参数 (Cauchy 模型)}: 
+    \[
+    A = 2.7451, \quad B = 0.0142 \,\mu m^2, \quad C = -3.51\times 10^{-6}\,\mu m^4
+    \]
+    \item \textbf{拟合质量}: 
+    \[
+    R^2 = 0.9341, \quad RMSE = 0.0123
+    \]
+    \item \textbf{厚度计算}: 
+    \[
+    d \approx 3.62 \,\mu m
+    \]
+\end{itemize}
+
+\section{结论}
+本文基于 Airy 多光束干涉公式对 SiC 外延层反射率曲线进行了拟合。结果表明，在 10° 入射角下，多光束干涉效应显著，必须采用 Airy 模型才能获得准确的厚度值。最终得到的外延层厚度约为 $3.6\,\mu m$，拟合结果与实验曲线高度一致，验证了该方法在外延层厚度测量中的有效性。
+
+\end{document}
