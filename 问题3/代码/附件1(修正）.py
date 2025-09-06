@@ -38,6 +38,9 @@ df = pd.read_excel("问题3/附件/附件1.xlsx", header=None, skiprows=1)
 wavelength = 1e4 / df.iloc[:,0].astype(float).to_numpy()
 R_exp = df.iloc[:,1].astype(float).to_numpy() / 100
 
+from scipy.signal import savgol_filter
+reflectance_filtered = savgol_filter(R_exp, 11, 3)  # 窗口长度=11，多项式阶数=3
+
 # --- 优化求解 ---
 init_params = [3.0, 2.6, 0.01, 0.0]
 res = minimize(objective, init_params, args=(wavelength, R_exp), method="Nelder-Mead")

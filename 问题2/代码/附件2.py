@@ -140,7 +140,7 @@ plt.figure(figsize=(8, 5))
 plt.plot(wavelength, reflectance_filtered*100, label="滤波后反射率", color="blue", linewidth=1.5)
 plt.xlabel("波长 (μm)")
 plt.ylabel("反射率 (%)")
-plt.title("滤波后反射率曲线")
+
 plt.legend()
 plt.grid(alpha=0.3)
 plt.tight_layout()
