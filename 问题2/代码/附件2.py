@@ -109,3 +109,28 @@ plt.legend(); plt.grid(alpha=0.3)
 plt.tight_layout()
 plt.savefig(os.path.join(output_dir, "干涉条纹标记.png"), dpi=300)
 plt.show()
+
+# -------- 快速版可靠性分析 --------
+n_trials = 200
+d_values = []
+
+for _ in range(n_trials):
+    # 给条纹间隔和中心波长加一点噪声
+    delta_lambda_noisy = delta_lambda_mean * (1 + np.random.normal(0, 0.01))  # 1%噪声
+    lambda_center_noisy = lambda_center * (1 + np.random.normal(0, 0.01))      # 1%噪声
+    
+    n_center_noisy = n_cauchy(lambda_center_noisy)
+    theta_t_noisy = np.arcsin(np.sin(theta_i) / n_center_noisy)
+    d_n = (lambda_center_noisy**2) / (2 * n_center_noisy * np.cos(theta_t_noisy) * delta_lambda_noisy)
+    d_values.append(d_n)
+
+plt.figure(figsize=(7,5))
+plt.hist(d_values, bins=20, color="skyblue", edgecolor="black")
+plt.axvline(np.mean(d_values), color="red", linestyle="--", label=f"均值={np.mean(d_values):.3f} μm")
+plt.xlabel("厚度 d (μm)")
+plt.ylabel("频数")
+plt.title("厚度蒙特卡洛分布")
+plt.grid(alpha=0.3)
+plt.tight_layout()
+plt.savefig(os.path.join(output_dir, "厚度分布_MC.png"), dpi=300)
+plt.show()

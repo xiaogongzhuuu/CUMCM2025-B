@@ -95,3 +95,29 @@ plt.show()
 pd.DataFrame({"条纹波长_μm": lambda_peaks, "条纹间隔Δλ_μm": np.append(delta_lambda, np.nan)}).to_excel(
     os.path.join(output_dir, "附件2_条纹间隔数据.xlsx"), index=False
 )
+# -------- 附加功能：厚度可靠性分析 (快速蒙特卡洛) --------
+n_trials = 200
+d_values = []
+
+for _ in range(n_trials):
+    # 给实验反射率加噪声（±0.5%）
+    noise = np.random.normal(0, 0.005, size=R_exp.shape)
+    R_noisy = np.clip(R_exp + noise, 0, 1)
+
+    # 再拟合厚度（只调整厚度，固定A,B,C，加速计算）
+    obj = lambda d: np.mean((airy_reflectance(wavelength, d, A_fit, B_fit, C_fit) - R_noisy)**2)
+    d_noisy = minimize(obj, d_fit, method="Nelder-Mead").x[0]
+    d_values.append(d_noisy)
+
+# 绘制直方图
+plt.figure(figsize=(7,5))
+plt.hist(d_values, bins=20, color="skyblue", edgecolor="black")
+plt.axvline(np.mean(d_values), color="red", linestyle="--", label=f"均值={np.mean(d_values):.3f} μm")
+plt.xlabel("厚度 d (μm)")
+plt.ylabel("频数")
+plt.title("厚度蒙特卡洛分布 (可靠性分析)")
+plt.legend()
+plt.grid(alpha=0.3)
+plt.tight_layout()
+plt.savefig(os.path.join(output_dir, "附件2_厚度分布_MC.png"), dpi=300)
+plt.show()
