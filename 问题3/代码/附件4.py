@@ -28,19 +28,22 @@ def airy_reflectance(lam, d, A, B, C):
     return (r01**2 + r12**2 + 2*np.abs(r01*r12)*np.cos(2*delta)) / \
            (1 + (r01*r12)**2 + 2*np.abs(r01*r12)*np.cos(2*delta))
 
+# --- 目标函数 ---
+def objective(params, lam, R_exp):
+    d, A, B, C = params
+    return np.mean((airy_reflectance(lam, d, A, B, C) - R_exp)**2)
+
 # --- 数据读取 ---
 df = pd.read_excel("问题3/附件/附件4.xlsx", header=None, skiprows=1)
 wavelength = 1e4 / df.iloc[:,0].astype(float).to_numpy()
 R_exp = df.iloc[:,1].astype(float).to_numpy() / 100
 
 # --- 数据平滑 ---
-reflectance_filtered = savgol_filter(R_exp, 11, 3)
+reflectance_filtered = savgol_filter(R_exp, 11, 3)  # 窗口长度=11，多项式阶数=3
 
-# --- 优化求解 (基于原始数据) ---
+# --- 优化求解  ---
 init_params = [3.0, 2.6, 0.01, 0.0]
-res = minimize(objective := lambda params, lam, R_exp: 
-               np.mean((airy_reflectance(lam, *params) - R_exp)**2),
-               init_params, args=(wavelength, R_exp), method="Nelder-Mead")
+res = minimize(objective, init_params, args=(wavelength, R_exp), method="Nelder-Mead")
 d_fit, A_fit, B_fit, C_fit = res.x
 
 # --- 拟合结果 ---
@@ -48,7 +51,7 @@ R_fit = airy_reflectance(wavelength, d_fit, A_fit, B_fit, C_fit)
 r2 = 1 - np.sum((R_exp - R_fit)**2) / np.sum((R_exp - np.mean(R_exp))**2)
 rmse = np.sqrt(np.mean((R_fit - R_exp)**2))
 
-# --- 图1: 原始 vs 滤波 vs 拟合 ---
+# --- 图1: 拟合对比 (原始 vs 拟合) ---
 plt.figure(figsize=(8,5))
 plt.plot(wavelength, R_exp, 'b.', alpha=0.5, label="实验数据(原始)")
 plt.plot(wavelength, reflectance_filtered, 'g-', linewidth=1, label="滤波后数据")
@@ -56,14 +59,15 @@ plt.plot(wavelength, R_fit, 'r-', label=f"拟合曲线 (d={d_fit:.3f} μm)")
 plt.xlabel("波长 (μm)"); plt.ylabel("反射率")
 plt.title("附件4公式拟合 (15° 入射角)")
 plt.legend(); plt.grid(alpha=0.3)
-plt.savefig(os.path.join(output_dir, "附件4_拟合对比.png"), dpi=300)
+plt.savefig(os.path.join(output_dir, "附件4拟合结果.png"), dpi=300)
 plt.show()
 
-# --- 图2: 干涉条纹 (基于滤波数据) ---
+# --- 图2: 干涉条纹 (基于滤波) ---
 peaks, _ = find_peaks(reflectance_filtered, distance=30)
 lambda_peaks = wavelength[peaks]
 delta_lambda = np.abs(np.diff(lambda_peaks))
 delta_lambda_mean = np.mean(delta_lambda)
+lambda_center = np.median(lambda_peaks)
 
 plt.figure(figsize=(8,5))
 plt.plot(wavelength, reflectance_filtered*100, label="滤波反射率", color="blue")
@@ -76,31 +80,47 @@ plt.legend(); plt.grid(alpha=0.3)
 plt.savefig(os.path.join(output_dir, "附件4_干涉条纹标记.png"), dpi=300)
 plt.show()
 
-# --- 导出条纹数据 ---
-pd.DataFrame({"条纹波长_μm": lambda_peaks, 
-              "条纹间隔Δλ_μm": np.append(delta_lambda, np.nan)}).to_excel(
+# --- 导出条纹数据 (基于滤波) ---
+pd.DataFrame({"条纹波长_μm": lambda_peaks, "条纹间隔Δλ_μm": np.append(delta_lambda, np.nan)}).to_excel(
     os.path.join(output_dir, "附件4_条纹间隔数据.xlsx"), index=False
 )
 
-# --- 蒙特卡洛分析 (基于滤波数据) ---
+# -------- 附加功能：厚度可靠性分析 (快速蒙特卡洛) --------
 n_trials = 200
 d_values = []
+
 for _ in range(n_trials):
-    noise = np.random.normal(0, 0.005, size=reflectance_filtered.shape)
-    R_noisy = np.clip(reflectance_filtered + noise, 0, 1)
+    # 给实验反射率加噪声（±0.5%）
+    noise = np.random.normal(0, 0.005, size=R_exp.shape)
+    R_noisy = np.clip(R_exp + noise, 0, 1)
+
+    # 再拟合厚度（只调整厚度，固定A,B,C，加速计算）
     obj = lambda d: np.mean((airy_reflectance(wavelength, d, A_fit, B_fit, C_fit) - R_noisy)**2)
     d_noisy = minimize(obj, d_fit, method="Nelder-Mead").x[0]
     d_values.append(d_noisy)
 
+# 绘制直方图
 plt.figure(figsize=(7,5))
 plt.hist(d_values, bins=20, color="skyblue", edgecolor="black")
-plt.axvline(np.mean(d_values), color="red", linestyle="--", 
-            label=f"均值={np.mean(d_values):.3f} μm")
+plt.axvline(np.mean(d_values), color="red", linestyle="--", label=f"均值={np.mean(d_values):.3f} μm")
 plt.xlabel("厚度 d (μm)")
 plt.ylabel("频数")
-plt.title("厚度蒙特卡洛分布 (基于滤波数据)")
-plt.legend(); plt.grid(alpha=0.3)
+plt.title("厚度蒙特卡洛分布 (可靠性分析)")
+plt.legend()
+plt.grid(alpha=0.3)
 plt.tight_layout()
 plt.savefig(os.path.join(output_dir, "附件4_厚度分布_MC.png"), dpi=300)
 plt.show()
 
+# -------- 仅滤波后反射率曲线 --------
+reflectance_filtered = savgol_filter(R_exp, 11, 3)  # 再次平滑确认
+plt.figure(figsize=(8, 5))
+plt.plot(wavelength, reflectance_filtered*100, label="滤波后反射率", color="blue", linewidth=1.5)
+plt.xlabel("波长 (μm)")
+plt.ylabel("反射率 (%)")
+plt.title("附件4滤波后反射率曲线")
+plt.legend()
+plt.grid(alpha=0.3)
+plt.tight_layout()
+plt.savefig(os.path.join(output_dir, "附件4_滤波后反射率.png"), dpi=300)
+plt.show()
