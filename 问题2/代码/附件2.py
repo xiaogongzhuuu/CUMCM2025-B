@@ -6,7 +6,7 @@ from scipy.optimize import minimize_scalar
 import os, matplotlib
 
 # 实验参数
-theta_i = np.radians(15)  # 入射角 15°
+theta_i = np.radians(15)  
 matplotlib.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'DejaVu Sans']
 matplotlib.rcParams['axes.unicode_minus'] = False
 output_dir = '问题2/分析结果/附件2'
@@ -19,12 +19,12 @@ def fresnel_reflectance(n, theta_i):
     r_p = (n*np.cos(theta_i) - np.cos(theta_t)) / (n*np.cos(theta_i) + np.cos(theta_t))
     return 0.5 * (r_s**2 + r_p**2)
 
-# 反射率 -> 折射率
+# 反射率到折射率
 def solve_n_from_reflectance(R_val):
     obj = lambda n: (fresnel_reflectance(n, theta_i) - R_val)**2
     return minimize_scalar(obj, bounds=(1.01, 5.0), method='bounded').x
 
-# 数据读取 & 转换
+# 数据读取和转换
 data = pd.read_excel('问题2/附件/附件2.xlsx', header=None, skiprows=1)
 data = data.apply(pd.to_numeric, errors='coerce').dropna()
 wavelength = 10000 / data.iloc[:, 0].to_numpy()  
@@ -83,7 +83,7 @@ pd.DataFrame({"条纹波长_μm": lambda_peaks, "条纹间隔Δλ_μm": np.appen
     os.path.join(output_dir, "条纹间隔_附件2.xlsx"), index=False
 )
 
-# 绘图1：折射率拟合 + 反射率验证
+# 绘图，折射率拟合 + 反射率验证
 fig, (ax1, ax2) = plt.subplots(1, 2, figsize=(12, 5))
 ax1.scatter(wavelength[valid], n_measured[valid], s=20, label='实验')
 ax1.plot(wavelength[valid], n_fit, 'r-', label='拟合')
@@ -99,7 +99,7 @@ ax2.set_title('反射率验证'); ax2.legend(); ax2.grid(alpha=0.3)
 plt.tight_layout()
 plt.savefig(os.path.join(output_dir, 'SiC_15度拟合.png'), dpi=300)
 
-# 绘图2：干涉条纹标记
+# 绘图，干涉条纹标记
 plt.figure(figsize=(8, 5))
 plt.plot(wavelength, reflectance_filtered*100, label="滤波反射率", color="blue")
 plt.scatter(lambda_peaks, reflectance_filtered[peaks]*100, color="red", s=40, label="条纹峰")
@@ -116,8 +116,8 @@ d_values = []
 
 for _ in range(n_trials):
     # 给条纹间隔和中心波长加一点噪声
-    delta_lambda_noisy = delta_lambda_mean * (1 + np.random.normal(0, 0.01))  # 1%噪声
-    lambda_center_noisy = lambda_center * (1 + np.random.normal(0, 0.01))      # 1%噪声
+    delta_lambda_noisy = delta_lambda_mean * (1 + np.random.normal(0, 0.01))  
+    lambda_center_noisy = lambda_center * (1 + np.random.normal(0, 0.01))     
     
     n_center_noisy = n_cauchy(lambda_center_noisy)
     theta_t_noisy = np.arcsin(np.sin(theta_i) / n_center_noisy)

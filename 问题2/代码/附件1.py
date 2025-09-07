@@ -6,7 +6,7 @@ from scipy.optimize import minimize_scalar
 import os, matplotlib
 
 # 实验参数
-theta_i = np.radians(10)  # 入射角 10°
+theta_i = np.radians(10)  
 matplotlib.rcParams['font.sans-serif'] = ['Arial Unicode MS', 'SimHei', 'DejaVu Sans']
 matplotlib.rcParams['axes.unicode_minus'] = False
 output_dir = '问题2/分析结果/附件1'
@@ -19,12 +19,12 @@ def fresnel_reflectance(n, theta_i):
     r_p = (n*np.cos(theta_i) - np.cos(theta_t)) / (n*np.cos(theta_i) + np.cos(theta_t))
     return 0.5 * (r_s**2 + r_p**2)
 
-# 反射率 -> 折射率
+# 反射率 到折射率
 def solve_n_from_reflectance(R_val):
     obj = lambda n: (fresnel_reflectance(n, theta_i) - R_val)**2
     return minimize_scalar(obj, bounds=(1.01, 5.0), method='bounded').x
 
-# 数据读取 & 转换
+# 数据读取 和转换
 data = pd.read_excel('问题2/附件/附件1.xlsx', header=None, skiprows=1)
 data = data.apply(pd.to_numeric, errors='coerce').dropna()
 wavelength = 10000 / data.iloc[:, 0].to_numpy()   # μm
@@ -117,8 +117,8 @@ d_values = []
 
 for _ in range(n_trials):
     # 给条纹间隔和中心波长加一点噪声
-    delta_lambda_noisy = delta_lambda_mean * (1 + np.random.normal(0, 0.01))  # 1%噪声
-    lambda_center_noisy = lambda_center * (1 + np.random.normal(0, 0.01))      # 1%噪声
+    delta_lambda_noisy = delta_lambda_mean * (1 + np.random.normal(0, 0.01))  
+    lambda_center_noisy = lambda_center * (1 + np.random.normal(0, 0.01))      
     
     n_center_noisy = n_cauchy(lambda_center_noisy)
     theta_t_noisy = np.arcsin(np.sin(theta_i) / n_center_noisy)
